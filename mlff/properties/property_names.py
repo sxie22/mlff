@@ -1,4 +1,5 @@
 energy = 'energy'
+intensive = 'intensive'
 force = 'force'
 hirshfeld_volume = 'hirshfeld_volume'
 hirshfeld_volume_ratio = 'hirshfeld_volume_ratio'

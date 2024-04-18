@@ -26,9 +26,63 @@ def switching_fn(x, x_on, x_off):
 def get_observable_module(name, h):
     if name == 'energy':
         return Energy(**h)
+    if name == 'intensive':
+        return Intensive(**h)
     else:
         msg = "No observable module implemented for `module_name={}`".format(name)
         raise ValueError(msg)
+    
+    
+class Intensive(BaseSubModule):
+    prop_keys: Dict
+    num_embeddings: int = 100
+    module_name: str = 'intensive'
+    scale_value: float = None
+    shift_value: float = None
+
+    def setup(self):
+        if self.scale_value is not None:
+            self.scale = jnp.float32(self.scale)
+        else:
+            self.scale = jnp.float32(1.)
+
+        if self.shift_value is not None:
+            self.shift = jnp.float32(self.shift)
+        else:
+            self.shift = jnp.float32(0.)
+
+    @nn.compact
+    def __call__(self, inputs: Dict, *args, **kwargs):
+        """
+
+        Args:
+            inputs ():
+            *args ():
+            **kwargs ():
+
+        Returns:
+
+        """
+        x = inputs['x']
+        point_mask = inputs['point_mask']
+
+        e_loc = MLP(features=[x.shape[-1], 1], activation_fn=silu)(x).squeeze(axis=-1)  # shape: (n)
+        e_loc = safe_scale(e_loc, scale=point_mask)  # shape: (n)
+        e_rep = jnp.asarray(0., dtype=e_loc.dtype)  # shape: (1)
+
+        #e_loc = self.get_per_atom_scale(z) * e_loc + self.get_per_atom_shift(z)  # shape: (n)
+        #value = e_loc.mean(axis=-1, keepdims=True)
+        value = e_loc.sum(axis=-1, keepdims=True) / point_mask.sum()
+        
+        value = self.scale * value + self.shift
+        return {"value": value}
+
+    def __dict_repr__(self) -> Dict[str, Dict[str, Any]]:
+        return {self.module_name: {'scale_value': self.scale_value,
+                                   'shift_value': self.shift_value,
+                                   'num_embeddings': self.num_embeddings,
+                                   'prop_keys': self.prop_keys}
+                }
 
 
 class Energy(BaseSubModule):
