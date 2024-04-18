@@ -24,3 +24,13 @@ qm7x_property_keys = {energy: 'ePBE0+MBD',
                       idx_j: 'idx_j',
                       node_mask: 'node_mask'
                       }
+
+intensive_property_keys = {intensive: 'value',
+                           atomic_position: 'R',
+                           atomic_type: 'z',
+                           idx_i: 'idx_i',
+                           idx_j: 'idx_j',
+                           unit_cell: 'unit_cell',
+                           pbc: 'pbc',
+                           cell_offset: 'cell_offset',
+                           node_mask: 'node_mask'}
